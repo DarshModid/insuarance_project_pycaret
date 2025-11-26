@@ -1,0 +1,1 @@
+# insuarance_project_pycaret
