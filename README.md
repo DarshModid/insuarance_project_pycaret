@@ -1,1 +1,1 @@
-# insuarance_project_pycaret
+insurance project using PyCaret
