@@ -1,54 +1,56 @@
-import streamlit as st
 from pycaret.regression import load_model, predict_model
-from PIL import Image
+import streamlit as st
 import pandas as pd
-
-model = load_model('insurance')
-
+from PIL import Image
+ 
+model = load_model('dt_insurance_charges')
+ 
 def predict(model, input_df):
-    predictions_df = predict_model(model, data=input_df)
-    prediction_value = predictions_df.iloc[0]['prediction_label']  # just the number
-    return prediction_value
-
+    predictions_df=predict_model(estimator=model, data=input_df)
+    predictions = predictions_df.iloc[0]['prediction_label']
+    return predictions
+ 
 def run():
-    i = Image.open('image.png')
-    h = Image.open('image.jpeg')
-
-    st.image(i)
-    st.sidebar.info('App is created for patient hospital charges')
-    st.sidebar.image(h)
-
-    add_selectbox = st.sidebar.selectbox("How would you like to predict?", ('online','batch'))
-    st.title('Insurance Charges Prediction App')
-
-    if add_selectbox == 'online':
-        age = st.number_input("Age", min_value=18, max_value=100, value=25)
-        sex = st.selectbox("Sex", ["male", "female"])
-        bmi = st.number_input("BMI", min_value=10.0, max_value=50.0, value=10.0, step=1.0)
-        children = st.selectbox("Children", list(range(0, 11)))
-        smoker = 'yes' if st.checkbox("Smoker") else 'no'
-        region = st.selectbox("Region", ["southwest", "southeast", "northwest", "northeast"])
-
-        input_dict = {
-            'age': age,
-            'sex': sex,
-            'bmi': bmi,
-            'children': children,
-            'smoker': smoker,
-            'region': region
-        }
-        input_df = pd.DataFrame([input_dict])
-
+    image=Image.open('logo.png')
+    image_hospital = Image.open('hospital.jpg')
+ 
+    st.image(image)
+    st.sidebar.info("This app is created to predict patient hospital charges")
+    st.sidebar.image(image_hospital)
+    add_selectbox = st.sidebar.selectbox("How would you like to predict?", ("Online","Batch"))
+    st.title("Insurance charges prediction app")
+    if add_selectbox=='Online':
+        age = st.number_input('Age',min_value=1,max_value=100, value=25)
+        sex = st.selectbox('Sex',['male','female'])
+        bmi= st.number_input('BMI',min_value=10,max_value=50, value=10)
+        children=st.selectbox('Children',[0,1,2,3,4,5,6,7,8,9,10])
+        if st.checkbox('Smoker'):
+            smoker='yes'
+        else:
+            smoker='no'
+        region = st.selectbox('Region',['southwest','northwest','northeast','southeast'])
+        output=""
+ 
+        input_dict = {'age':age,'sex':sex,'bmi':bmi,'children':children,'smoker':smoker,'region': region}
+        input_df=pd.DataFrame([input_dict])
+ 
         if st.button("Predict"):
-            output = predict(model, input_df)  # use wrapper
-            st.success(f'The predicted insurance charge is ${output:.2f}')
-    else:
-        file_upload = st.file_uploader("Upload CSV file for predictions", type=["csv"])
+            output=predict(model=model, input_df=input_df)
+            output = "$"+str(output)
+        st.success('This Output is {}'.format(output))
+ 
+ 
+    if add_selectbox=='Batch':
+        file_upload = st.file_uploader("Upload a csv file for predictions", type=["csv"])
+ 
         if file_upload is not None:
-            input_df = pd.read_csv(file_upload)
-            if st.button("Predict"):
-                predictions_df = predict_model(model, data=input_df)
-                st.write(predictions_df)        
-
-if __name__ == '__main__':
+            data=pd.read_csv(file_upload)
+            predictions = predict_model(estimator=model, data=data)
+            st.write(predictions)
+ 
+ 
+ 
+ 
+ 
+if __name__ =='__main__':
     run()
